@@ -1,8 +1,9 @@
 # This script contains the core business operations. 
 # It strictly validates that clients are based in central Birmingham and programmatically ensures workers are matched 
-# by both their postcode zone and active availability.
+# by both their postcode zone, active availability, and applies a 20% platform commission fee split at checkout.
 
 import sqlite3
+import pandas as pd
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
@@ -23,7 +24,7 @@ class CentralBirminghamMarketplace:
 
     def _get_connection(self):
         conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row  # Enables accessing query metrics by column name
+        conn.row_factory = sqlite3.Row  # Enables access to database fields by column name
         return conn
 
     def register_client(self, client_id: str, name: str, email: str, phone: str, postcode: str) -> bool:
@@ -110,15 +111,22 @@ class CentralBirminghamMarketplace:
             worker_data = cursor.fetchone()
             if not worker_data:
                 return None
-            
+
+            # Fixed 2-hour cleaning blocks for the MVP
             total_cost = worker_data['hourly_rate'] * 2.0
+            booking_id = f"BHM-{int(datetime.now().timestamp())}"
+
+            # Simulated 20% platform commission fee split
+            platform_fee = round(total_cost * 0.20, 2)
+            worker_payout = round(total_cost - platform_fee, 2)
             booking_id = f"BHM-{int(datetime.now().timestamp())}"
 
             try:
                 # 3. Insert Booking
                 cursor.execute(
-                    "INSERT INTO bookings (booking_id, client_id, worker_id, date_str, time_slot, total_cost) VALUES (?, ?, ?, ?, ?, ?)",
-                    (booking_id, client_id, worker_id, date_str, time_slot, total_cost)
+                    "INSERT INTO bookings (booking_id, client_id, worker_id, date_str, time_slot, total_cost,platform_fee, worker_payout)\
+                          VALUES (?, ?, ?, ?, ?, ?,?,?)",
+                    (booking_id, client_id, worker_id, date_str, time_slot, total_cost, platform_fee, worker_payout)
                 )
                 # 4. Remove time slot from available pool to avoid double-bookings
                 cursor.execute(
@@ -127,8 +135,20 @@ class CentralBirminghamMarketplace:
                 )
                 conn.commit()
                 print(f"✅ Success: {booking_id} confirmed for Residential Clean in {date_str} ({time_slot}). Total: £{total_cost:.2f}")
-                return booking_id
+                return {
+                    "booking_id": booking_id,
+                    "total_cost": total_cost,
+                    "platform_fee": platform_fee,
+                    "worker_payout": worker_payout
+                }
             except sqlite3.Error as e:
                 print(f"❌ Transaction failure: {e}")
                 conn.rollback()
                 return None
+
+    def export_ledger_csv(self, filename: str = "generated/birmingham_mvp_ledger.csv"):
+        """Exports the transaction history to a CSV spreadsheet."""
+        with self._get_connection() as conn:
+            df = pd.read_sql_query("SELECT * FROM bookings", conn)
+            df.to_csv(filename, index=False)
+            return filename
