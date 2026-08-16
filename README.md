@@ -66,8 +66,11 @@ Run this script once to initialize your persistent database tables, automaticall
 
 ## 2. The MVP Marketplace Core Engine (engine.py)
 
-This script contains your core business operations. It strictly validates that clients are based in central Birmingham and programmatically ensures workers are matched by both their postcode zone and active availability.
+This script contains your core business operations. It strictly validates that clients are based in central Birmingham and programmatically ensures workers are matched by both their postcode zone and active availability().
 
-## 3. Operational Simulation Run (simulation.py)
+## 3. Operational Simulation Run (test.py)
 
-Run this file to run through an end-to-end simulation of your MVP platform in action—from validating a local Birmingham client to completing a transactional booking.
+Run this file to run through an end-to-end simulation of your MVP platform in action—from validating a local Birmingham client to completing a transactional booking(onboarding clients, managing shifts, filtering by postcode, checking out, and verifying that the booked slot is locked out).
+
+## Requirements.txt file:
+This contains necesarry python Libraries used in the scripts.

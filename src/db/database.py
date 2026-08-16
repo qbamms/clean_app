@@ -1,7 +1,9 @@
-# The SQLite Database Setup allows your application to save 
+# The Persistent SQLite Database Setup allows your application to save 
 # clients, workers, and bookings locally on your machine without requiring a heavy external database server.
 # Run this script once to initialize your persistent database tables, 
 # automatically creating the data structure with built-in Birmingham postcode validation.
+# It enforces foreign key constraints to ensure that deleting a worker automatically 
+# clears their listed service postcodes and available time slots.
 
 import sqlite3
 
@@ -9,10 +11,10 @@ def init_db():
     conn = sqlite3.connect("marketplace.db")
     cursor = conn.cursor()
 
-    # Enable foreign keys
+    # Enable foreign keys and enforce database integrity rules
     cursor.execute("PRAGMA foreign_keys = ON;")
 
-    # 1. Clients Table (Scoped to Residential Customers)
+    # 1. Clients Table (Scoped to Residential Homeowners/Renters only for MVP)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS clients (
         client_id TEXT PRIMARY KEY,
@@ -23,7 +25,7 @@ def init_db():
     );
     """)
 
-     # 2. Workers Table
+     # 2. Cleaners/Workers Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS workers (
         worker_id TEXT PRIMARY KEY,
@@ -34,7 +36,7 @@ def init_db():
     );
     """)
 
-    # 3. Worker Service Zones (Valid Birmingham MVP postcodes)
+    # 3. Worker Service Zones Table (Valid Birmingham MVP postcodes)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS worker_zones (
         worker_id TEXT,
@@ -44,7 +46,7 @@ def init_db():
     );
     """)
 
-    # 4. Worker Availability Slots
+    # 4. Worker Availability Slots Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS worker_availability (
         worker_id TEXT,
@@ -55,7 +57,7 @@ def init_db():
     );
     """)
 
-    # 5. Bookings Table
+    # 5. Financial Ledger & Bookings Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS bookings (
         booking_id TEXT PRIMARY KEY,
@@ -64,6 +66,8 @@ def init_db():
         date_str TEXT,
         time_slot TEXT,
         total_cost REAL,
+        platform_fee REAL,
+        worker_payout REAL,
         status TEXT DEFAULT 'Confirmed',
         FOREIGN KEY (client_id) REFERENCES clients(client_id),
         FOREIGN KEY (worker_id) REFERENCES workers(worker_id)
@@ -72,4 +76,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print("💾 Database initialized successfully with MVP tables.")
+    print("💾 Persistent SQLite database initialized successfully for Birmingham city centre MVP.")
+
+if __name__ == "__main__":
+    init_db()
