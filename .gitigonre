@@ -1,2 +1,6 @@
-__pycache__
+# Ignore the local SQLite database
 marketplace.db
+
+# Ignore all Python bytecode cache directories
+__pycache__/
+*.py[cod]
