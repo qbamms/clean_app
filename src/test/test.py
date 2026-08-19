@@ -61,7 +61,7 @@ print("\n--- 🏗️ STEP 4: PROCESSING TRANSACTIONAL BOOKING AND SPLIT PAYOUT -
 transaction = app.book_cleaning("C01", "W01", "2026-08-15", "09:00-11:00")
 if transaction:
     print(f"Booking Confirmed: {transaction['booking_id']}")
-    print(f"  💸 Total Paid by Client:  £{transaction['total_cost']:.2f}")
+    print(f"  💸 Total Paid by Client:  £{transaction['gross_amount']:.2f}")
     print(f"  🏢 App Net Platform Fee: £{transaction['platform_fee']:.2f} (20% Cut)")
     print(f"  🧹 Sent to Cleaner Bank:  £{transaction['worker_payout']:.2f}")
 

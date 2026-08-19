@@ -113,20 +113,20 @@ class CentralBirminghamMarketplace:
                 return None
 
             # Fixed 2-hour cleaning blocks for the MVP
-            total_cost = worker_data['hourly_rate'] * 2.0
+            gross_amount = worker_data['hourly_rate'] * 2.0
             booking_id = f"BHM-{int(datetime.now().timestamp())}"
 
             # Simulated 20% platform commission fee split
-            platform_fee = round(total_cost * 0.20, 2)
-            worker_payout = round(total_cost - platform_fee, 2)
+            platform_fee = round(gross_amount * 0.20, 2)
+            worker_payout = round(gross_amount - platform_fee, 2)
             booking_id = f"BHM-{int(datetime.now().timestamp())}"
 
             try:
                 # 3. Insert Booking
                 cursor.execute(
-                    "INSERT INTO bookings (booking_id, client_id, worker_id, date_str, time_slot, total_cost,platform_fee, worker_payout)\
+                    "INSERT INTO bookings (booking_id, client_id, worker_id, date_str, time_slot, gross_amount,platform_fee, worker_payout)\
                           VALUES (?, ?, ?, ?, ?, ?,?,?)",
-                    (booking_id, client_id, worker_id, date_str, time_slot, total_cost, platform_fee, worker_payout)
+                    (booking_id, client_id, worker_id, date_str, time_slot, gross_amount, platform_fee, worker_payout)
                 )
                 # 4. Remove time slot from available pool to avoid double-bookings
                 cursor.execute(
@@ -134,10 +134,10 @@ class CentralBirminghamMarketplace:
                     (worker_id, date_str, time_slot)
                 )
                 conn.commit()
-                print(f"✅ Success: {booking_id} confirmed for Residential Clean in {date_str} ({time_slot}). Total: £{total_cost:.2f}")
+                print(f"✅ Success: {booking_id} confirmed for Residential Clean in {date_str} ({time_slot}). Total: £{gross_amount:.2f}")
                 return {
                     "booking_id": booking_id,
-                    "total_cost": total_cost,
+                    "gross_amount": gross_amount,
                     "platform_fee": platform_fee,
                     "worker_payout": worker_payout
                 }
