@@ -65,7 +65,7 @@ def init_db():
         worker_id TEXT,
         date_str TEXT,
         time_slot TEXT,
-        total_cost REAL,
+        gross_amount REAL,
         platform_fee REAL,
         worker_payout REAL,
         status TEXT DEFAULT 'Confirmed',

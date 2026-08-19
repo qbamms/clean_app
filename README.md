@@ -74,3 +74,16 @@ Run this file to run through an end-to-end simulation of your MVP platform in ac
 
 ## Requirements.txt file:
 This contains necesarry python Libraries used in the scripts.
+
+## 🛠️ Execution Instructions
+
+To launch your web prototype local instance, follow these steps in your terminal application:
+
+1. **Install required application dependencies:**
+   ```bash
+   pip install streamlit pandas
+
+2. Execute the Streamlit server command:
+streamlit run app.py
+
+Once you run this command, your web browser will automatically open to http://localhost:8501. You can then prototype the end-to-end workflow—from registering accounts to processing bookings—directly from the web interface.
