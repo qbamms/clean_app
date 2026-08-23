@@ -1,2 +1,0 @@
-booking_id,client_id,worker_id,date_str,time_slot,total_cost,platform_fee,worker_payout,status
-BHM-1786875362,C01,W01,2026-08-15,09:00-11:00,37.0,7.4,29.6,Confirmed

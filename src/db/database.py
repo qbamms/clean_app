@@ -7,8 +7,10 @@
 
 import sqlite3
 
+DB_FILE = "cleaning_engine.db"
+
 def init_db():
-    conn = sqlite3.connect("marketplace.db")
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
     # Enable foreign keys and enforce database integrity rules
@@ -80,3 +82,13 @@ def init_db():
 
 if __name__ == "__main__":
     init_db()
+
+def get_db_connection():
+    """Yields a safe connection context for FastAPI routes."""
+    conn = sqlite3.connect(DB_FILE)
+    # This magic line changes database rows from tuples () into dictionary keys []
+    conn.row_factory = sqlite3.Row 
+    try:
+        yield conn
+    finally:
+        conn.close()

@@ -1,15 +1,16 @@
 # To convert the central Birmingham cleaning engine into an interactive web prototype, 
 # Streamlit library would be use.
 # This code would run a multi-tab application where you can toggle between a Client Booking App and a Cleaner Schedule Dashboard.
+# Admin Dashboard (frontend/admin_app.py): Run this app using: streamlit run frontend/admin_app.py --server.port 8503
 
 import streamlit as st
 import os
 from datetime import date
 from db import database
-from app import engine
+from src.db import engine
 
 # Ensure database file exists on boot
-if not os.path.exists("marketplace.db"):
+if not os.path.exists("cleaning_engine.db"):
     database.init_db()
 
 # Initialize the marketplace backend engine
@@ -179,7 +180,7 @@ with tab_admin:
     import sqlite3
     import pandas as pd
     
-    conn = sqlite3.connect("marketplace.db")
+    conn = sqlite3.connect("cleaning_engine.db")
     df_bookings = pd.read_sql_query("SELECT * FROM bookings", conn)
     conn.close()
     

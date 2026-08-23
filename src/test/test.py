@@ -12,7 +12,7 @@ if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
 from db import database
-from app import engine
+from src.db import engine
 
 # Get the directory of test_database.py, then go up one level to the root
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

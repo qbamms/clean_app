@@ -19,7 +19,7 @@ class BirminghamMVPConfig:
         return pc.strip().upper().split()[0]
 
 class CentralBirminghamMarketplace:
-    def __init__(self, db_path: str = "marketplace.db"):
+    def __init__(self, db_path: str = "cleaning_engine.db"):
         self.db_path = db_path
 
     def _get_connection(self):
