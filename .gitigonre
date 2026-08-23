@@ -1,5 +1,5 @@
 # Ignore the local SQLite database
-marketplace.db
+cleaning_engine.db
 
 # Ignore all Python bytecode cache directories
 __pycache__/
