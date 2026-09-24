@@ -2,5 +2,5 @@ pytest==8.3.2
 pandas==3.0.5
 fastapi==0.141.1
 requests==2.32.3
-pydantic==2.10.4
-streamlit==1.39.0
+pydantic>=2.10.4
+streamlit>=1.56.0

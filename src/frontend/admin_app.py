@@ -2,6 +2,7 @@
 # Streamlit library would be use.
 # This code would run a Admin Booking App Dashboard.
 # Admin Dashboard (frontend/admin_app.py): Run this app using: streamlit run frontend/admin_app.py --server.port 8503
+# Hosted on Streamlit.app: https://cleanapp-mvp.streamlit.app/
 
 import streamlit as st
 import streamlit as pd
