@@ -1,3 +1,5 @@
+#  Database (db/main.py): Run this db-backend using: uvicorn main:app --reload
+
 # src/db/main.py
 import sys
 from pathlib import Path
