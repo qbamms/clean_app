@@ -2,6 +2,7 @@
 # Streamlit library would be use.
 # This code would run a Worker Booking App Dashboard.
 # Worker Dashboard (frontend/worker_app.py): Run this app using: streamlit run frontend/worker_app.py --server.port 8502
+# Hosted on Streamlit.app: https://cleanapp-worker-mvp.streamlit.app/
 
 import streamlit as st
 import os
