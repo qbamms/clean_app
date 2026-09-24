@@ -2,7 +2,7 @@
 # Streamlit library would be use.
 # This code would run a Client Booking App and a Cleaner Schedule Dashboard.
 # Client Dashboard (frontend/client_app.py): Run this app using: streamlit run frontend/client_app.py --server.port 8501
-
+# Hosted on Streamlit.app: https://cleanapp-client-mvp.streamlit.app/
 
 import streamlit as st
 import os
