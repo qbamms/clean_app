@@ -21,7 +21,10 @@ if root_dir not in sys.path:
 from db import database
 
 # Point this directly to your running FastAPI server
-API_URL = "http://127.0.0.1:8000"
+# API_URL = "http://127.0.0.1:8000"
+
+# Point this directly to Render API link.
+API_URL = "https://clean-app-so0x.onrender.com"
 
 # Ensure database file exists on boot
 if not os.path.exists("cleaning_engine.db"):
