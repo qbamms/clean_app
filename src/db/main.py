@@ -20,7 +20,7 @@ from src.db.database import init_db, get_db_connection
 from src.db.engine import CentralBirminghamMarketplace
 
 # Initialize the marketplace backend engine
-cleaning_engine = CentralBirminghamMarketplace(db_path="cleaning_engine.db")
+cleaning_engine = CentralBirminghamMarketplace(db_path="postgresql://neondb_owner:npg_XmJVl3ZNir1b@ep-broad-star-b5rnz3ym-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
 
 app = FastAPI(title="Cleaning Engine API")
 
