@@ -5,13 +5,13 @@
 # It enforces foreign key constraints to ensure that deleting a worker automatically 
 # clears their listed service postcodes and available time slots.
 
-import sqlite3
+# import sqlite3
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Best practice: Use an environment variable, fall back to the string if testing locally
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://neondb_owner:npg_XmJVl3ZNir1b@ep-broad-star-b5rnz3ym-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://neondb_owner:npg_XmJVl3ZNir1b@ep-broad-star-b5rnz3ym-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
 
 # Start the engine (Postgres does not need the sqlite connect_args)
 engine = create_engine(DATABASE_URL)
