@@ -68,14 +68,9 @@ with column_reg:
                     if response.status_code == 200:
                         st.success(f"Welcome {client_name}! Account active in database.")
                     else:
-                        error_detail = response.json().get('detail', 'Unknown error')
-                    st.error(f"Registration failed: {error_detail}")
-                except Exception:
-                    st.error(f"Server crashed with Status Code {response.status_code}")
-                    st.code(response.text[:1000], language="html")  # Shows the real Python traceback from Render
-                #         # st.error(f"Registration failed: {response.json().get('detail', 'Unknown error')}")
-                # except requests.exceptions.ConnectionError:
-                #     st.error("Cannot reach the central backend server.")
+                        st.error(f"Registration failed: {response.json().get('detail', 'Unknown error')}")
+                except requests.exceptions.ConnectionError:
+                    st.error("Cannot reach the central backend server.")
                 
     with column_search:
         st.subheader("🔍 Step 2: Browse and Checkout Available Openings")
