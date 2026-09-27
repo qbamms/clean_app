@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+from sqlalchemy.orm import Session
 # import sqlite3
 
 # Dynamically calculates the absolute root folder path and injects it into Python
@@ -17,7 +18,7 @@ if str(root_path) not in sys.path:
 # from src.db.database import init_db, get_db_connection
 
 # Import the postgress connection setups directly from database.py
-from src.db.database import engine, Base
+from src.db.database import engine, Base, get_db
 
 # Import your Marketplace core directly from your engine file
 from src.db.engine import CentralBirminghamMarketplace
@@ -74,9 +75,10 @@ def home():
     }
 
 @app.post("/clients/register")
-def register_client(client: ClientRegister, db: sqlite3.Connection = Depends(get_db_connection)):
+# def register_client(client: ClientRegister, db: sqlite3.Connection = Depends(get_db_connection)):
+def register_client(client: ClientRegister, db: Session = Depends(get_db)):
     success = cleaning_engine.register_client(
-        client.client_id, client.name, client.email, client.phone, client.postcode
+       db, client.client_id, client.name, client.email, client.phone, client.postcode
     )
     if not success:
         raise HTTPException(status_code=400, detail="Registration failed. Check postcode zone constraints or email duplication.")
@@ -84,18 +86,19 @@ def register_client(client: ClientRegister, db: sqlite3.Connection = Depends(get
    
 
 @app.post("/workers/register")
-def register_worker(worker: WorkerRegister, db: sqlite3.Connection = Depends(get_db_connection)):
+# def register_worker(worker: WorkerRegister, db: sqlite3.Connection = Depends(get_db_connection)):
+def register_worker(worker: WorkerRegister, db: Session = Depends(get_db)):
     success = cleaning_engine.register_worker(
-        worker.worker_id, worker.name, worker.email, worker.phone, worker.hourly_rate, worker.zones
+       db, worker.worker_id, worker.name, worker.email, worker.phone, worker.hourly_rate, worker.zones
     )
     if not success:
         raise HTTPException(status_code=400, detail="Registration rejected. Worker must service central zones (B1-B5).")
     return {"success": True, "message": "Worker profile deployed."}
 
 @app.post("/workers/availability")
-def add_availability(avail: AvailabilitySubmit, db: sqlite3.Connection = Depends(get_db_connection)):
+def add_availability(avail: AvailabilitySubmit, db: Session = Depends(get_db)):
     try:
-        cleaning_engine.add_worker_availability(avail.worker_id, avail.date, avail.slots)
+        cleaning_engine.add_worker_availability(db, avail.worker_id, avail.date, avail.slots)
         return {"success": True, "message": "Calendar inventory updated."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -116,34 +119,30 @@ def api_create_booking(booking: BookingCreate):
     return result
 
 @app.get("/admin/metrics")
-def api_get_admin_metrics():
-    conn = cleaning_engine._get_connection()
-    cursor = conn.cursor()
+def api_get_admin_metrics(db: Session = Depends(get_db)):
     
     try:
         # 1. Gather Client counts and detailed data records
-        cursor.execute("SELECT client_id, name, email, phone, postcode FROM clients")
-        clients = [dict(row) for row in cursor.fetchall()]
+        db.execute("SELECT client_id, name, email, phone, postcode FROM clients")
+        clients = [dict(row) for row in db.fetchall()]
         
         # 2. Gather Worker counts and detailed data records
-        cursor.execute("SELECT worker_id, name, email, phone, hourly_rate FROM workers")
-        workers = [dict(row) for row in cursor.fetchall()]
+        db.execute("SELECT worker_id, name, email, phone, hourly_rate FROM workers")
+        workers = [dict(row) for row in db.fetchall()]
         
         # 3. Gather Transaction counts and detailed ledger rows
-        cursor.execute("SELECT * FROM bookings")
-        bookings = [dict(row) for row in cursor.fetchall()]
+        db.execute("SELECT * FROM bookings")
+        bookings = [dict(row) for row in db.fetchall()]
         
         # 4. Optional: Calculate platform-wide financial KPIs using aggregate functions
-        cursor.execute("SELECT SUM(gross_amount) as total_rev, SUM(platform_fee) as platform_cut FROM bookings")
-        financials = cursor.fetchone()
+        db.execute("SELECT SUM(gross_amount) as total_rev, SUM(platform_fee) as platform_cut FROM bookings")
+        financials = db.fetchone()
         total_revenue = financials["total_rev"] if financials["total_rev"] else 0.0
         platform_earnings = financials["platform_cut"] if financials["platform_cut"] else 0.0
         
-    except sqlite3.Error as e:
-        conn.close()
+    except Exception as e:
+        db.rollback()  # Undo changes if anything fails
         raise HTTPException(status_code=500, detail=f"Database execution error: {str(e)}")
-        
-    conn.close()
     
     # Pack both the summary counts and full data dictionaries into a single JSON package
     return {
