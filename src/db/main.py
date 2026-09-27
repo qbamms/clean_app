@@ -7,6 +7,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 # import sqlite3
 
 # Dynamically calculates the absolute root folder path and injects it into Python
@@ -118,33 +119,36 @@ def api_create_booking(booking: BookingCreate):
         raise HTTPException(status_code=400, detail="Transaction declined. Slot unavailable or invalid Client ID.")
     return result
 
+from sqlalchemy import text  # Ensure text is imported at the top of your file
+
 @app.get("/admin/metrics")
 def api_get_admin_metrics(db: Session = Depends(get_db)):
-    
     try:
-        # 1. Gather Client counts and detailed data records
-        db.execute("SELECT client_id, name, email, phone, postcode FROM clients")
-        clients = [dict(row) for row in db.fetchall()]
+        # Gather Client records using text() and convert rows into clean dictionaries
+        client_query = db.execute(text("SELECT client_id, name, email, phone, postcode FROM clients"))
+        clients = [dict(row) for row in client_query.mappings().all()]
         
-        # 2. Gather Worker counts and detailed data records
-        db.execute("SELECT worker_id, name, email, phone, hourly_rate FROM workers")
-        workers = [dict(row) for row in db.fetchall()]
+        # Gather Worker records
+        worker_query = db.execute(text("SELECT worker_id, name, email, phone, hourly_rate FROM workers"))
+        workers = [dict(row) for row in worker_query.mappings().all()]
         
-        # 3. Gather Transaction counts and detailed ledger rows
-        db.execute("SELECT * FROM bookings")
-        bookings = [dict(row) for row in db.fetchall()]
+        # Gather Booking ledger rows
+        booking_query = db.execute(text("SELECT * FROM bookings"))
+        bookings = [dict(row) for row in booking_query.mappings().all()]
         
-        # 4. Optional: Calculate platform-wide financial KPIs using aggregate functions
-        db.execute("SELECT SUM(gross_amount) as total_rev, SUM(platform_fee) as platform_cut FROM bookings")
-        financials = db.fetchone()
-        total_revenue = financials["total_rev"] if financials["total_rev"] else 0.0
-        platform_earnings = financials["platform_cut"] if financials["platform_cut"] else 0.0
+        # Calculate platform-wide financial KPIs safely using aggregations
+        financial_query = db.execute(text("SELECT SUM(gross_amount) as total_rev, SUM(platform_fee) as platform_cut FROM bookings"))
+        financials = financial_query.mappings().first()  # Grabs the first mapped row tuple
+        
+        # Check if the database returned null rows and assign defaults
+        total_revenue = financials["total_rev"] if financials and financials["total_rev"] else 0.0
+        platform_earnings = financials["platform_cut"] if financials and financials["platform_cut"] else 0.0
         
     except Exception as e:
-        db.rollback()  # Undo changes if anything fails
+        db.rollback()  # Safely roll back transaction if an entity fails
         raise HTTPException(status_code=500, detail=f"Database execution error: {str(e)}")
     
-    # Pack both the summary counts and full data dictionaries into a single JSON package
+    # Return the clean, serialisable dictionary payload
     return {
         "summary": {
             "total_clients": len(clients),
@@ -159,3 +163,4 @@ def api_get_admin_metrics(db: Session = Depends(get_db)):
             "bookings": bookings
         }
     }
+
