@@ -7,6 +7,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 # import sqlite3
 
 # Dynamically calculates the absolute root folder path and injects it into Python
