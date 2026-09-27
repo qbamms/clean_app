@@ -6,15 +6,18 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-import sqlite3
+# import sqlite3
 
 # Dynamically calculates the absolute root folder path and injects it into Python
 root_path = Path(__file__).resolve().parent.parent.parent
 if str(root_path) not in sys.path:
     sys.path.insert(0, str(root_path))
 
-# Import the sqlite3 connection setups directly from database.py
-from src.db.database import init_db, get_db_connection
+# # Import the sqlite3 connection setups directly from database.py
+# from src.db.database import init_db, get_db_connection
+
+# Import the postgress connection setups directly from database.py
+from src.db.database import engine, Base
 
 # Import your Marketplace core directly from your engine file
 from src.db.engine import CentralBirminghamMarketplace
@@ -24,8 +27,11 @@ cleaning_engine = CentralBirminghamMarketplace(db_path="postgresql+psycopg2://ne
 
 app = FastAPI(title="Cleaning Engine API")
 
-# Initialize database schema immediately on app launch
-init_db()
+# # Initialize database schema immediately on app launch
+# init_db()
+
+# This tells SQLAlchemy to make sure tables exist in Neon on startup
+Base.metadata.create_all(bind=engine)
 
 # ==============================================================================
 # PYDANTIC SCHEMAS (Data Validation Payloads)
