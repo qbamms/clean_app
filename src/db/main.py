@@ -105,15 +105,16 @@ def add_availability(avail: AvailabilitySubmit, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/cleaners/search")
-def api_search_cleaners(postcode: str, date: str, slot: str):
-    # Calls your engine's search method directly
-    results = cleaning_engine.search_available_cleaners(postcode, date, slot)
+def api_search_cleaners(postcode: str, date: str, slot: str, db: Session = Depends(get_db)):
+    # Add 'db' as the first argument passed to the engine
+    results = cleaning_engine.search_available_cleaners(db, postcode, date, slot)
     return results
 
 @app.post("/bookings/create")
-def api_create_booking(booking: BookingCreate):
+def api_create_booking(booking: BookingCreate, db: Session = Depends(get_db)):
+    # Add 'db' as the first argument passed to the engine
     result = cleaning_engine.book_cleaning(
-        booking.client_id, booking.worker_id, booking.date, booking.slot
+        db, booking.client_id, booking.worker_id, booking.date, booking.slot
     )
     if not result:
         raise HTTPException(status_code=400, detail="Transaction declined. Slot unavailable or invalid Client ID.")
