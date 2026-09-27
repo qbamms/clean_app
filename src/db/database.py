@@ -8,14 +8,31 @@
 # import sqlite3
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 # Best practice: Use an environment variable, fall back to the string if testing locally
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://neondb_owner:npg_XmJVl3ZNir1b@ep-broad-star-b5rnz3ym-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
 
 # Start the engine (Postgres does not need the sqlite connect_args)
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+                        DATABASE_URL,
+                        pool_pre_ping=True,  # Automatically tests/reconnects if Neon goes to sleep
+                        pool_size=5,         # Keeps connections ready for incoming traffic
+                        max_overflow=10      # Dynamically scales up if you get a surge of users
+                        )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Define the Base class (The core registry blueprint that your models will inherit from)
+class Base(DeclarativeBase):
+    pass
+
+# Dependency helper used by FastAPI routes to get a database session and close it automatically when done
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # def init_db():
 #     conn = sqlite3.connect(DATABASE_URL)
